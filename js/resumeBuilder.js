@@ -11,7 +11,7 @@ var bio = {
                 "github": "github.com/umair719",
                 "twitter": "@umair719",
                 "location": "Houston",
-                "blog": "blogger.com/umair719"
+                "blog": "http://umair719.blogspot.com/"
             },
             "bioPic": "https://avatars3.githubusercontent.com/u/2522678?v=3&s=460",
             "welcomeMessage": "Welcome to My Resume",
@@ -71,7 +71,6 @@ var bio = {
         this.generate.contactGen();
     }
 };
-
 var work = {
     data: function () {
         return {
@@ -113,7 +112,6 @@ var work = {
         this.generate();
     }
 };
-
 var projects = {
     data: function () {
         return {
@@ -131,7 +129,6 @@ var projects = {
         }
     },
     generate: function () {
-        console.log(projects.data());
         var d = projects.data();
         for (var project in d.projects) {
             $('#projects').append(HTMLprojectStart);
@@ -142,51 +139,132 @@ var projects = {
                 HTMLprojectImage.replace('%data%', (currentProject.images));
             $('.project-entry:last').append(thisProject);
         }
-
     },
     display: function () {
         this.generate();
     }
 
 };
-
 var education = {
-    "schools": [{
-        "name": "University of Houston",
-        "city": "Houston",
-        "degree": "BS",
-        "major": ['CompEng'],
-        "dates": 2010,
-        "url": "www.uh.edu"
-    }, {
-        "name": "Texas A&M University",
-        "city": "Houston",
-        "degree": "MBA",
-        "major": "Management"
-    }],
-    "onlineCourses": [{
-        "title": "JavaScript Crash Course",
-        "school": "Udacity",
-        "dates": "2015",
-        "url": "http://www.udacity.com/course/ud804"
-    }]
+    data: function () {
+        return {
+            "schools": [{
+                "name": "University of Houston",
+                "city": "Houston",
+                "degree": "BS",
+                "major": ['CompEng'],
+                "dates": {
+                    "start": 2006,
+                    "end": 2010
+                },
+                "url": "uh.edu"
+            }, {
+                "name": "Texas A&M University",
+                "city": "Houston",
+                "degree": "MBA",
+                "major": ["Management", "Finance"],
+                "dates": {
+                    "start": 2016,
+                    "end": 2018
+                },
+                "url": "tamu.edu"
+            }],
+            "onlineCourses": [{
+                "title": "JavaScript Crash Course",
+                "school": "Udacity",
+                "dates": "2015",
+                "url": "http://www.udacity.com/course/ud804"
+            }]
+        }
+    },
+    generate: {
+        schools: function () {
+            var d = education.data()['schools'];
+            var p = '%data%';
+
+            var formatMajors = function (d) {
+                var majors = "";
+                for (var m in d) {
+                    majors += HTMLschoolMajor.replace('%data%', d[m]);
+                }
+                return majors;
+            };
+
+            var formatDates = function (d) {
+                return HTMLschoolDates.replace('%data%', d.start + " - " + d.end);
+            };
+
+            for (var s in d) {
+                $('#education').append(HTMLschoolStart);
+                var thisSchool = HTMLschoolName.replace(p, d[s].name) +
+                    HTMLschoolLocation.replace(p, d[s].city) +
+                    HTMLschoolDegree.replace(p, d[s].degree) +
+                    formatMajors(d[s].major) +
+                    formatDates(d[s].dates) +
+                    HTMLschoolUrl.replace(p, d[s].url).replace('%url%', d[s].url);
+                $('.education-entry:last').append(thisSchool);
+            }
+        },
+        onlineCourses: function () {
+            var d = education.data()['onlineCourses'];
+        }
+    },
+    display: function () {
+        this.generate.schools();
+        this.generate.onlineCourses();
+    }
+
+};
+var maps = {
+    data: function () {
+        return ['Houston', 'karachi', 'los angles']
+    },
+    generate: function () {
+        var d = this.data();
+        var map;
+        $('#mapDiv').append(googleMap);
+
+        function initMap() {
+
+            var map = new google.maps.Map(document.getElementById('map'), {
+                center: {lat: -34.397, lng: 150.644},
+                zoom: 3
+            });
+
+            for (var loc in d) {
+                var geocoder = new google.maps.Geocoder();
+                geocoder.geocode({'address': d[loc]}, function (results, status) {
+                    var location = results[0].geometry.location;
+                    var address = results[0].formatted_address;
+                    if (status === google.maps.GeocoderStatus.OK) {
+                        map.setCenter(location);
+                        var marker = new google.maps.Marker({
+                            map: map,
+                            position: location,
+                            title: address,
+                            visible: true
+                        });
+                    }
+                });
+            }
+
+
+        }
+
+        initMap();
+
+    },
+    display: function () {
+        this.generate();
+    }
 };
 
 var buildResume = function () {
     bio.display();
     work.display();
     projects.display();
+    education.display();
+    maps.display();
 };
 
 buildResume();
-
-//$('#main').append(internationalizeButton);
-
-//
-//var inName = function () {
-//    var name = $('#name').text();
-//    var intName = name.split(" ");
-//    return intName[0][0].toUpperCase() + intName[0].slice(1) + " " + intName[1].toUpperCase();
-//};
-
-
