@@ -162,7 +162,7 @@ var education = {
                 "name": "Texas A&M University",
                 "city": "Houston",
                 "degree": "MBA",
-                "major": ["Management", "Finance"],
+                "major": ["Management"],
                 "dates": {
                     "start": 2016,
                     "end": 2018
@@ -231,24 +231,50 @@ var maps = {
                 zoom: 3
             });
 
+
             for (var loc in d) {
                 var geocoder = new google.maps.Geocoder();
                 geocoder.geocode({'address': d[loc]}, function (results, status) {
                     var location = results[0].geometry.location;
-                    var address = results[0].formatted_address;
+                    var loc = 'https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&' +
+                        'exintro=&explaintext=&titles=' + encodeURIComponent(location.split(",")[0]);
+                    var content;
+
+                    function setContent(d) {
+                        content = d;
+                    }
+
                     if (status === google.maps.GeocoderStatus.OK) {
                         map.setCenter(location);
                         var marker = new google.maps.Marker({
                             map: map,
                             position: location,
-                            title: address,
                             visible: true
                         });
+
+
+                        $.ajax({
+                            url: loc,
+                            method: 'GET',
+                            dataType: "jsonp",
+                            success: function (d) {
+                                for (var first in d.query.pages) {
+                                    setContent(d.query.pages[first].extract);
+                                }
+                            }
+                        });
+
+
+                        var infoWindow = new google.maps.InfoWindow({
+                            content: content
+                        });
+
+                        marker.addListener('click', function () {
+                            infoWindow.open(map, marker);
+                        })
                     }
                 });
             }
-
-
         }
 
         initMap();
